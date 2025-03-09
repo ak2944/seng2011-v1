@@ -1,0 +1,32 @@
+image: node:18
+
+stages:
+  - checks
+  - tests
+
+before_script:
+  - npm install
+
+lint:
+  stage: checks
+  script:
+    - npm run lint
+
+type-check:
+  stage: checks
+  script:
+    - npm run tsc
+
+tests:
+  stage: tests
+  only:
+    - master
+    - merge_requests
+  script:
+    SERVER_LOG=$(mktemp)
+    - npm run start >& $SERVER_LOG &
+    - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
+    - timeout -s SIGINT 180s npm run test || (cat $SERVER_LOG && exit 1)
+    - kill -SIGINT %1
+    - sleep 2
+    - cat $SERVER_LOG
