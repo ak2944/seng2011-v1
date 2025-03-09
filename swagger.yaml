@@ -1,0 +1,11 @@
+swagger: "2.0"
+info:
+  title: FiveApple API
+  version: 1.0.0
+
+tags:
+  - name: "Sprint 2"
+    description: Sprint 2 routes
+
+schemes:
+  - http

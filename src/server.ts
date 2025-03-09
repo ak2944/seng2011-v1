@@ -56,7 +56,3 @@ const server = app.listen(PORT, HOST, () => {
 process.on('SIGINT', () => {
     server.close(() => console.log('Shutting down server gracefully.'));
 });
-
-app.listen(PORT, () => {
-    console.log(`Server is running on PORT: ${PORT}`);
-});
