@@ -1,11 +1,12 @@
 import express, { Express, Request, Response } from 'express';
-import morgan from 'morgan';
+// import morgan from 'morgan';
 import config from './config.json';
 import cors from 'cors';
 import errorHandler from 'middleware-http-errors';
 import fs from 'fs';
 import path from 'path';
 import YAML from 'yaml';
+import sui from 'swagger-ui-express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import process from 'process';
@@ -19,7 +20,7 @@ app.use(express.json());
 // Use middleware that allows us to access for access from other domains
 app.use(cors());
 // For loggin errors (print to terminal)
-app.use(morgan('dev'));
+// app.use(morgan('dev'));
 
 // for producing the docs that define the API
 const file = fs.readFileSync(path.join(process.cwd(), 'swagger.yaml'), 'utf8');
