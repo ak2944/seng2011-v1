@@ -12,6 +12,8 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import process from 'process';
 
+import { User } from "./user";
+
 dotenv.config();
 
 // Set up web app
@@ -32,41 +34,52 @@ const PORT: number = parseInt(process.env.PORT || config.port);
 const HOST: string = process.env.IP || '127.0.0.1';
 
 const uri: string =
-    process.env.MONGODB_URI || 'mongodb://localhost:27017/your-app';
-
-const client: MongoClient = new MongoClient(uri, {
-    serverApi: {
-        version: ServerApiVersion.v1,
-        strict: true,
-        deprecationErrors: true,
-    }
-});
-
+    process.env.MONGODB_URI || '';
+    
 // DB connection
-async function run(): Promise<void> {
-    try {
-        await client.connect();
-        await client.db("admin").command({ ping: 1 });
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
-    } catch (e) {
-        console.error("Error connecting to MongoDB:", e);
-    } finally {
-        await client.close();
-    }
-};
-
-run().catch(console.dir);
-
-app.get('/health', (_req: Request, res: Response) => {
-    res.status(200).send('Server is running');
-});
+mongoose.connect(uri, {
+    serverSelectionTimeoutMS: 5000, // Timeout if MongoDB is unavailable
+}).then(() => console.log("✅ Connected to MongoDB"))
+  .catch(err => console.error("❌ MongoDB connection error:", err));
 
 // Start server
 const server = app.listen(PORT, HOST, () => {
     console.log(`⚡️ Server started on port ${PORT} at ${HOST}`);
 });
 
+// Health check
+app.get('/health', (_req: Request, res: Response) => {
+    res.status(200).send('Server is running');
+});
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////   Routes    ///////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+
+app.post('/add-mock-user', async (_req: Request, res: Response) => {
+    try {
+        const mockUser = new User({
+            name: "John Doe",
+            email: `johndoe${Math.floor(Math.random() * 10000)}@example.com`, // Prevent duplicate emails
+        });
+
+        await mockUser.save();
+        res.status(201).json({ message: "Mock user added successfully!", user: mockUser });
+    } catch (error) {
+        console.error("Error adding mock user:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
 // Handle Ctrl + C gracefully 
-process.on('SIGINT', () => {
+process.on('SIGINT', async () => {
     server.close(() => console.log('Shutting down server gracefully.'));
+    await mongoose.connection.close();
+    console.log("✅ MongoDB connection closed.");
+    process.exit(0);
 });
