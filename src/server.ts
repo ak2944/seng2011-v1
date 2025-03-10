@@ -1,5 +1,6 @@
 import express, { Express, Request, Response } from 'express';
 // import morgan from 'morgan';
+import { MongoClient, ServerApiVersion } from 'mongodb';
 import config from './config.json';
 import cors from 'cors';
 import errorHandler from 'middleware-http-errors';
@@ -30,18 +31,31 @@ app.use('/docs', sui.serve, sui.setup(YAML.parse(file), { swaggerOptions: { docE
 const PORT: number = parseInt(process.env.PORT || config.port);
 const HOST: string = process.env.IP || '127.0.0.1';
 
-// const uri: string =
-//     process.env.MONGODB_URI || 'mongodb://localhost:27017/your-app';
+const uri: string =
+    process.env.MONGODB_URI || 'mongodb://localhost:27017/your-app';
+
+const client: MongoClient = new MongoClient(uri, {
+    serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+    }
+});
 
 // DB connection
-// (async () => {
-//     try {
-//         await mongoose.connect(uri);
-//         console.log('Connected to the database');
-//     } catch(error) {
-//         console.error(error);
-//     }
-// })();
+async function run(): Promise<void> {
+    try {
+        await client.connect();
+        await client.db("admin").command({ ping: 1 });
+        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    } catch (e) {
+        console.error("Error connecting to MongoDB:", e);
+    } finally {
+        await client.close();
+    }
+};
+
+run().catch(console.dir);
 
 app.get('/health', (_req: Request, res: Response) => {
     res.status(200).send('Server is running');
