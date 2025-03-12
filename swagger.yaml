@@ -132,3 +132,96 @@ paths:
           description: Order Not Found
         500:
           description: Internal Server Error - UBL generation failure
+
+/api/despatchAdvice/{id}:
+    get:
+      tags:
+        - "Sprint 2"
+      summary: Retrieve Despatch Advice
+      description: Retrieves a specific Despatch Advice document
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the Despatch Advice
+          type: string
+          example: "DA2052"
+      responses:
+        200:
+          description: Despatch Advice retrieved successfully
+          schema:
+            type: object
+            properties:
+              despatchAdviceId:
+                type: string
+                example: "DA2052"
+              ublXml:
+                type: string
+                example: "<DespatchAdvice>...</DespatchAdvice>"
+        404:
+          description: Despatch Advice not found
+
+  /api/despatchAdvice/cancel:
+    post:
+      tags:
+        - "Sprint 2"
+      summary: Cancel Despatch Advice
+      description: Cancels a previously created Despatch Advice
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          description: Cancellation request payload
+          schema:
+            type: object
+            required:
+              - despatchAdviceId
+              - cancellationReason
+            properties:
+              despatchAdviceId:
+                type: string
+                example: "DA2052"
+              cancellationReason:
+                type: string
+                example: "Incorrect delivery address"
+      responses:
+        200:
+          description: Despatch Advice cancelled successfully
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Despatch Advice cancelled successfully"
+        400:
+          description: Invalid cancellation reason
+        404:
+          description: Despatch Advice not found
+
+  /api/health:
+    get:
+      tags:
+        - "Sprint 2"
+      summary: Health Checkpoint
+      description: Checks the health of the service
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Service is up
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "UP"
+              timestamp:
+                type: string
+                format: date-time
+                example: "2025-02-28T11:00:00+11:00"
