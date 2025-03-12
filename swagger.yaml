@@ -9,3 +9,126 @@ tags:
 
 schemes:
   - http
+
+paths:
+  /api/despatchAdvice/generate:
+    post:
+      tags:
+        - "Sprint 2"
+      summary: Generate Despatch Advice
+      description: Creates a UBL 2.1-compliant Despatch Advice Document.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          description: Despatch Advice request payload
+          schema:
+            type: object
+            required:
+              - orderId
+              - shipmentDetails
+              - deliveryAddress
+              - despatchSupplierParty
+              - items
+            properties:
+              orderId:
+                type: string
+                example: "UNSW12345"
+              shipmentDetails:
+                type: object
+                required:
+                  - despatchDate
+                  - carrier
+                  - trackingNumber
+                properties:
+                  despatchDate:
+                    type: string
+                    format: date
+                    example: "2025-02-28"
+                  carrier:
+                    type: string
+                    example: "Australia Post"
+                  trackingNumber:
+                    type: string
+                    example: "AUSPOST12345"
+              deliveryAddress:
+                type: object
+                required:
+                  - name
+                  - street
+                  - city
+                  - state
+                  - country
+                  - postalCode
+                properties:
+                  name:
+                    type: string
+                    example: "John Smith"
+                  street:
+                    type: string
+                    example: "High Street"
+                  city:
+                    type: string
+                    example: "Kensington"
+                  state:
+                    type: string
+                    example: "NSW"
+                  country:
+                    type: string
+                    example: "Australia"
+                  postalCode:
+                    type: string
+                    example: "2052"
+              despatchSupplierParty:
+                type: object
+                required:
+                  - name
+                  - address
+                properties:
+                  name:
+                    type: string
+                    example: "Jane Smith Pty Ltd"
+                  address:
+                    type: string
+                    example: "1 George St, Sydney, NSW"
+              items:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - orderLineId
+                    - deliveredQuantity
+                    - unitCode
+                  properties:
+                    orderLineId:
+                      type: string
+                      example: "1"
+                    deliveredQuantity:
+                      type: integer
+                      example: 5
+                    unitCode:
+                      type: string
+                      example: "EA"
+
+      responses:
+        201:
+          description: Despatch Advice successfully created
+          schema:
+            type: object
+            properties:
+              despatchAdviceId:
+                type: string
+                example: "DA2052"
+              ublXml:
+                type: string
+                example: "<DespatchAdvice>...</DespatchAdvice>"
+        400:
+          description: Bad Request - Missing mandatory fields
+        404:
+          description: Order Not Found
+        500:
+          description: Internal Server Error - UBL generation failure
