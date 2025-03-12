@@ -133,7 +133,7 @@ paths:
         500:
           description: Internal Server Error - UBL generation failure
 
-/api/despatchAdvice/{id}:
+  /api/despatchAdvice/{id}:
     get:
       tags:
         - "Sprint 2"
