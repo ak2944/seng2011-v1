@@ -13,6 +13,8 @@ import dotenv from 'dotenv';
 import process from 'process';
 
 import { User } from './user';
+import { cancelAdvice } from './advice';
+import { INVALID_REASON } from './errors';
 
 dotenv.config();
 
@@ -50,6 +52,21 @@ const server = app.listen(PORT, HOST, () => {
 // Health check
 app.get('/health', (_req: Request, res: Response) => {
     res.status(200).send('Server is running');
+});
+
+app.delete('/api/despatchAdvice/cancel', (req: Request, res: Response) => {
+    const { id, reason } = req.body;
+
+    try {
+        const result = cancelAdvice(id, reason);
+        res.json(result);
+    } catch (e) {
+        if (e === INVALID_REASON) {
+            res.status(400).json({ error: e.message });
+        } else {
+            res.status(404).json({ error: e.message });
+        }
+    }
 });
 
 // =============================================================================
