@@ -26,9 +26,9 @@ describe('POST /api/v1/order/parse', () => {
             <cbc:IssueDate>2005-06-20</cbc:IssueDate>
             </Order>
         `;
-  
+
         const result = requestOrderParse(validXml);
-  
+
         expect(getStatusCode(result)).toStrictEqual(200);
         expect(getBody(result)).toMatchObject({
             parsedOrder: {
@@ -39,16 +39,16 @@ describe('POST /api/v1/order/parse', () => {
             }
         });
     });
-  
+
     test('No XML => 400', () => {
         const result = requestOrderParse('');
         expect(getStatusCode(result)).toStrictEqual(400);
         expect(getBody(result)).toStrictEqual({ error: 'No XML found in request body.' });
     });
-  
+
     test('Invalid XML => 500 parse error', () => {
-        const invalidXml = `<Order <BadlyFormed >> hello`;
-  
+        const invalidXml = '<Order <BadlyFormed >> hello';
+
         const result = requestOrderParse(invalidXml);
         expect(getStatusCode(result)).toStrictEqual(500);
         // We just check there's an error property:
@@ -56,7 +56,7 @@ describe('POST /api/v1/order/parse', () => {
             error: expect.any(String),
         });
     });
-  
+
     test('Not a valid UBL Order => 400', () => {
         const notOrderXml = `
             <?xml version="1.0"?>
@@ -64,7 +64,7 @@ describe('POST /api/v1/order/parse', () => {
             <cbc:ID>123</cbc:ID>
             </Foo>
         `;
-    
+
         const result = requestOrderParse(notOrderXml);
         expect(getStatusCode(result)).toStrictEqual(500);
         expect(getBody(result)).toStrictEqual({
