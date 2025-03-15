@@ -1,11 +1,274 @@
 swagger: "2.0"
 info:
   title: FiveApple API
-  version: 1.0.0
+  version: "1.0.0"
 
 tags:
   - name: "Sprint 2"
-    description: Sprint 2 routes
+    description: "Sprint 2 routes"
 
 schemes:
   - http
+consumes:
+  - application/json
+produces:
+  - application/json
+
+paths:
+  /api/order/parse:
+    post:
+      tags:
+        - "Sprint 2"
+      summary: "Parse UBL Order XML"
+      description: >
+        Receives UBL Order XML in the request body as `application/xml` (or `text/xml`) 
+        and parses it into a JSON structure.
+      consumes:
+        - application/xml
+        - text/xml
+      parameters:
+        - in: body
+          name: orderXml
+          description: "The UBL Order XML string to be parsed"
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Successful parse of Order XML"
+          schema:
+            type: object
+            properties:
+              parsedOrder:
+                $ref: "#/definitions/ParsedOrder"
+        "400":
+          description: "Invalid request (e.g., missing or invalid XML)"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "No XML in request body."
+        "500":
+          description: "Internal server error encountered while parsing XML"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Error in parseOrderXml"
+
+  /api/despatchAdvice/generate:
+    post:
+      tags:
+        - "Sprint 2"
+      summary: "Generate a Despatch Advice"
+      description: >
+        Accepts a JSON body with orderId, shipment details, delivery address, 
+        despatch supplier info, and item(s). Returns a status code and body 
+        reflecting the generation results (potentially the generated document, 
+        or a reference to it).
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: DespatchAdviceRequest
+          description: "Despatch Advice generation request payload"
+          required: true
+          schema:
+            $ref: "#/definitions/DespatchAdviceRequest"
+      responses:
+        "200":
+          description: "Despatch Advice generated successfully"
+          schema:
+            type: object
+            properties:
+              statusCode:
+                type: integer
+                example: 200
+              body:
+                type: object
+                description: "Represents the generated Despatch Advice or success message"
+        "400":
+          description: "Invalid request data (e.g., missing fields)"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Missing required fields"
+        "403":
+          description: "Unauthorized or forbidden"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Forbidden"
+        "500":
+          description: "Server error encountered while generating Despatch Advice"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Internal Server Error"
+
+# ------------------------------------------------------------
+# Definitions (Data Models)
+# ------------------------------------------------------------
+definitions:
+
+  ###################################################
+  # /api/order/parse Output
+  ###################################################
+  ParsedOrder:
+    type: object
+    properties:
+      orderId:
+        type: string
+      salesOrderId:
+        type: string
+      orderUUID:
+        type: string
+      orderIssueDate:
+        type: string
+      note:
+        type: string
+      buyerAccountId:
+        type: string
+      buyerName:
+        type: string
+      buyerAddress:
+        $ref: "#/definitions/UBLAddress"
+      sellerAccountId:
+        type: string
+      sellerName:
+        type: string
+      sellerAddress:
+        $ref: "#/definitions/UBLAddress"
+      deliveryAddress:
+        $ref: "#/definitions/UBLAddress"
+      requestedDeliveryStartDate:
+        type: string
+      requestedDeliveryEndDate:
+        type: string
+      orderLine:
+        $ref: "#/definitions/UBLOrderLine"
+
+  UBLAddress:
+    type: object
+    properties:
+      streetName:
+        type: string
+      buildingName:
+        type: string
+      buildingNumber:
+        type: string
+      cityName:
+        type: string
+      postalZone:
+        type: string
+      countrySubentity:
+        type: string
+      addressLine:
+        type: string
+      countryCode:
+        type: string
+
+  UBLOrderLine:
+    type: object
+    properties:
+      lineId:
+        type: string
+      salesOrderLineId:
+        type: string
+      lineStatusCode:
+        type: string
+      quantity:
+        type: string
+      quantityUnitCode:
+        type: string
+      lineExtensionAmount:
+        type: string
+      itemName:
+        type: string
+      itemDescription:
+        type: string
+      buyersItemId:
+        type: string
+      sellersItemId:
+        type: string
+
+  ###################################################
+  # /api/despatchAdvice/generate Input
+  ###################################################
+  DespatchAdviceRequest:
+    type: object
+    required:
+      - orderId
+      - shipmentDetails
+      - deliveryAddress
+      - despatchSupplierParty
+      - items
+    properties:
+      orderId:
+        type: string
+        example: "AEG012345"
+      shipmentDetails:
+        $ref: "#/definitions/ShipmentDetails"
+      deliveryAddress:
+        $ref: "#/definitions/DeliveryAddress"
+      despatchSupplierParty:
+        $ref: "#/definitions/DespatchSupplierParty"
+      items:
+        type: array
+        items:
+          $ref: "#/definitions/Item"
+
+  ShipmentDetails:
+    type: object
+    properties:
+      despatchDate:
+        type: string
+        description: "ISO8601 string for the date/time of despatch"
+      carrier:
+        type: string
+        example: "FastCarrier Inc."
+      trackingNumber:
+        type: string
+        example: "TRACK12345XYZ"
+
+  DeliveryAddress:
+    type: object
+    properties:
+      name:
+        type: string
+      street:
+        type: string
+      city:
+        type: string
+      state:
+        type: string
+      country:
+        type: string
+      postalCode:
+        type: integer
+
+  DespatchSupplierParty:
+    type: object
+    properties:
+      name:
+        type: string
+      address:
+        type: string
+
+  Item:
+    type: object
+    properties:
+      orderLineId:
+        type: integer
+      deliveredQuantity:
+        type: number
+      unitCode:
+        type: string
