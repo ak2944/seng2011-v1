@@ -15,7 +15,7 @@ produces:
   - application/json
 
 paths:
-  /api/order/parse:
+  /api/v1/order/parse:
     post:
       tags:
         - "Sprint 2"
@@ -58,7 +58,7 @@ paths:
                 type: string
                 example: "Error in parseOrderXml"
 
-  /api/despatchAdvice/generate:
+  /api/v1/despatchAdvice/generate:
     post:
       tags:
         - "Sprint 2"
