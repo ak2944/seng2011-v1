@@ -1,6 +1,5 @@
-import express, { Express, Request, Response } from 'express';
+import express, { Request, Response } from 'express';
 // import morgan from 'morgan';
-// import { MongoClient, ServerApiVersion } from 'mongodb';
 import config from './config.json';
 import cors from 'cors';
 // import errorHandler from 'middleware-http-errors';
@@ -13,13 +12,14 @@ import dotenv from 'dotenv';
 import process from 'process';
 
 import { User } from './user';
+import { parseOrderXml } from './parseOrder';
 
 dotenv.config();
 
 // Set up web app
-const app: Express = express();
+const app = express();
 // Use middleware that allows us to access the JSON body of requests
-app.use(express.json());
+
 // Use middleware that allows us to access for access from other domains
 app.use(cors());
 // For loggin errors (print to terminal)
@@ -40,7 +40,7 @@ const uri: string =
 mongoose
     .connect(uri, { serverSelectionTimeoutMS: 5000 })
     .then(() => console.log('✅ Connected to MongoDB'))
-    .catch(err => console.error('❌ MongoDB connection error:", err'));
+    .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // Start server
 const server = app.listen(PORT, HOST, () => {
@@ -56,6 +56,23 @@ app.get('/health', (_req: Request, res: Response) => {
 // =============================   Routes    ===================================
 // =============================================================================
 
+app.post('/api/v1/order/parse', express.text({ type: 'application/xml' }), (req: Request, res: Response) => {
+    try {
+        const orderXml = req.body as string;
+        if (!orderXml) {
+            return res.status(400).json({ error: 'No XML found in request body.' });
+        }
+
+        const parsedOrder = parseOrderXml(orderXml);
+        return res.status(200).json({ parsedOrder });
+    } catch (error) {
+        console.error('Error in parseOrderXml:', error);
+        return res.status(500).json({ error: String(error) });
+    }
+});
+
+app.use(express.json());
+
 app.post('/add-mock-user', async (_req: Request, res: Response) => {
     try {
         const mockUser = new User({
@@ -70,6 +87,7 @@ app.post('/add-mock-user', async (_req: Request, res: Response) => {
     }
 });
 
+// =============================================================================
 // =============================================================================
 // =============================================================================
 
