@@ -7,7 +7,7 @@
         "outDir": "./dist",
         "esModuleInterop": true,
         "noImplicitAny": true,
-        "noEmit": true,
+        // "noEmit": true,
         "resolveJsonModule": true,
         "forceConsistentCasingInFileNames": true,
         "strict": true,

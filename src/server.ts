@@ -43,10 +43,18 @@ mongoose
     .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // Start server
+// const server = app.listen(PORT, HOST, () => {
+//     console.log(`⚡️ Server started on port ${PORT} at ${HOST}`);
+// });
 const server = app.listen(PORT, HOST, () => {
     console.log(`⚡️ Server started on port ${PORT} at ${HOST}`);
 });
 
+if (process.env.NODE_ENV !== 'lambda') {
+    const server = app.listen(PORT, HOST, () => {
+        console.log(`⚡️ Server started on port ${PORT} at ${HOST}`);
+    });
+}
 // Health check
 app.get('/health', (_req: Request, res: Response) => {
     res.status(200).send('Server is running');
