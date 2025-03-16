@@ -21,7 +21,7 @@ export function validateDespatchAdviceUserInputs(userInputs?: Record<string, any
     if (!userInputs) {
         return true;
     }
-    
+
     const validKeys = new Set<keyof DespatchAdviceUserInputs>([
         'despatchId',
         'despatchUUID',
@@ -43,6 +43,4 @@ export function validateDespatchAdviceUserInputs(userInputs?: Record<string, any
     }
 
     return true;
-
-    //return Object.keys(userInputs).every((key) => validKeys.has(key as keyof DespatchAdviceUserInputs));
 }

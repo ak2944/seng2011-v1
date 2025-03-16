@@ -9,8 +9,8 @@ import { DespatchAdviceUserInputs } from './types/despatchTypes';
  * - user-provided overrides
  */
 export function generateDespatchAdvice(
-  parsedOrder: ParsedOrder,
-  userInputs: DespatchAdviceUserInputs = {}
+    parsedOrder: ParsedOrder,
+    userInputs: DespatchAdviceUserInputs = {}
 ): string {
     // 1. Extract fields from the parsed order
     const {
@@ -29,8 +29,6 @@ export function generateDespatchAdvice(
         sellerAddress,
 
         deliveryAddress,
-        requestedDeliveryStartDate,
-        requestedDeliveryEndDate,
 
         orderLine,
     } = parsedOrder;
@@ -50,9 +48,9 @@ export function generateDespatchAdvice(
     // 3. Build XML using xmlbuilder2
     const root = create({ version: '1.0', encoding: 'UTF-8' })
         .ele('DespatchAdvice', {
-        xmlns: 'urn:oasis:names:specification:ubl:schema:xsd:DespatchAdvice-2',
-        'xmlns:cbc': 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2',
-        'xmlns:cac': 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2',
+            xmlns: 'urn:oasis:names:specification:ubl:schema:xsd:DespatchAdvice-2',
+            'xmlns:cbc': 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2',
+            'xmlns:cac': 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2',
         })
         .ele('cbc:UBLVersionID').txt('2.0').up()
         .ele('cbc:CustomizationID')

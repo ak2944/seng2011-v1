@@ -115,6 +115,22 @@ app.post('/api/v1/despatch-advice/generate', async (req: Request, res: Response)
     }
 });
 
+app.get('/api/v1/despatch-advice/:uuid', async (req: Request, res: Response) => {
+    try {
+        const { uuid } = req.params;
+
+        const found = await DespatchAdviceModel.findOne({ docUUID: uuid });
+        if (!found) {
+            return res.status(404).json({ error: 'Despatch Advice not found' });
+        }
+
+        return res.type('application/xml').status(200).send(found.xml);
+    } catch (error) {
+        console.error('Error retrieving Despatch Advice:', error);
+        return res.status(500).json({ error: 'Failed to retrieve Despatch Advice' });
+    }
+});
+
 app.post('/add-mock-user', async (_req: Request, res: Response) => {
     try {
         const mockUser = new User({
