@@ -1,4 +1,4 @@
-import { ADVICE_ID_INVALID, INVALID_REASON } from './errors';
+import { ADVICE_ID_INVALID } from './errors';
 
 const DespatchAdvice = require('../DespatchAdvice');
 
@@ -8,10 +8,8 @@ const DespatchAdvice = require('../DespatchAdvice');
  * @param reason - The reason for cancellation
  * @returns { message: string } - A message stating the status of the cancellation
  */
-export async function cancelAdvice(adviceId: string, reason: string) {
-    if (!isValidReason(reason)) throw INVALID_REASON;
-
-    const advice = await DespatchAdvice.findOne({ adviceId });
+export async function cancelAdvice(despatchUUID: string, reason: string) {
+    const advice = await DespatchAdvice.findOne({ despatchUUID });
     if (!advice) {
         throw ADVICE_ID_INVALID;
     }
@@ -22,8 +20,4 @@ export async function cancelAdvice(adviceId: string, reason: string) {
     await advice.save();
 
     return { message: 'Despatch Advice cancelled successfully' };
-}
-
-function isValidReason(reason: string) {
-    return (reason === 'Valid reason');
 }
