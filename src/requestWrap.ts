@@ -8,7 +8,7 @@ export function requestCancel(id: string, reason: string) {
         despatchAdviceId: id,
         cancellationReason: reason
     };
-    const req = request('GET', SERVER_URL + '/api/despatchAdvice/cancel', { json: input, timeout: TIMEOUT_MS });
+    const req = request('DELETE', SERVER_URL + '/api/despatchAdvice/cancel', { json: input, timeout: TIMEOUT_MS });
     const body = JSON.parse(req.body as string);
     return { statusCode: req.statusCode, body: body };
 }

@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import mongoose from 'mongoose';
 const SERVER_URL = `${url}:${port}`;
 
-function requestGenerateDespatchAdvice(
+export function requestGenerateDespatchAdvice(
     parsedOrder: ParsedOrder,
     userInputs: DespatchAdviceUserInputs = {}
 ) {
@@ -21,7 +21,7 @@ function requestGenerateDespatchAdvice(
     return response;
 }
 
-const validXml = `
+export const validXml = `
     <?xml version="1.0" encoding="UTF-8"?>
     <Order xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns="urn:oasis:names:specification:ubl:schema:xsd:Order-2">
         <cbc:UBLVersionID>2.0</cbc:UBLVersionID>
