@@ -26,6 +26,7 @@
     "middleware-http-errors": "^0.1.2",
     "mongoose": "^8.12.0",
     "morgan": "^1.10.0",
+    "node-libcurl": "^4.1.0",
     "sync-request-curl": "^3.1.0",
     "ts-node": "^10.7.0",
     "uuid": "^11.1.0",
