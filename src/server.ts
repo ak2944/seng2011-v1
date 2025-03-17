@@ -89,7 +89,6 @@ app.post('/api/v1/despatch-advice/generate', async (req: Request, res: Response)
         console.log(body.userInputs);
 
         if (!validateDespatchAdviceUserInputs(body.userInputs)) {
-            console.log('bye');
             return res.status(500).json({ error: 'Could not generate Despatch Advice' });
         }
 

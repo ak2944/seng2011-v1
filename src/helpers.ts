@@ -36,7 +36,6 @@ export function validateDespatchAdviceUserInputs(userInputs?: Record<string, any
     ]);
 
     for (const key of Object.keys(userInputs)) {
-        console.log('hello');
         if (!validKeys.has(key as keyof DespatchAdviceUserInputs)) {
             return false;
         }
