@@ -152,7 +152,7 @@ const DespatchAdviceSchema = new Schema({
 }, { timestamps: true });
 
 // Dummy function to mark DespatchAdviceSchema as used without side effects
-function _useSchema(schema) {
+function _useSchema(schema: any) {
     return schema;
 }
 _useSchema(DespatchAdviceSchema);
