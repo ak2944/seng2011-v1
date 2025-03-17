@@ -29,6 +29,7 @@ tests:
     - master
     - merge_requests
   script:
+    - curl ifconfig.me
     - SERVER_LOG=$(mktemp)
     - npm run start >& $SERVER_LOG &
     - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
