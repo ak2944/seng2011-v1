@@ -151,4 +151,4 @@ const DespatchAdviceSchema = new Schema({
     HealthCheck: { type: HealthCheckSchema, required: true }
 }, { timestamps: true });
 
-module.exports = mongoose.model('DespatchAdvice', DespatchAdviceSchema);
+//module.exports = mongoose.model('DespatchAdvice', DespatchAdviceSchema);
