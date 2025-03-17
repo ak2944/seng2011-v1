@@ -1,8 +1,5 @@
 image: node:18
 
-services:
-  - name: mogno:latest
-
 variables:
   MONGODB_URI: "mongodb+srv://juanfranpuyo:kXXgF0VMbNyjOkDx@fiveapple.e5jpm.mongodb.net/?retryWrites=true&w=majority&appName=FiveApple"
 
