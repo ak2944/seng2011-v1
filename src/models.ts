@@ -151,7 +151,7 @@ const DespatchAdviceSchema = new Schema({
     HealthCheck: { type: HealthCheckSchema, required: true }
 }, { timestamps: true });
 
-// DDummy function to mark DespatchAdviceSchema as used without side effects
+// Dummy function to mark DespatchAdviceSchema as used without side effects
 function _useSchema(schema) {
     return schema;
 }
