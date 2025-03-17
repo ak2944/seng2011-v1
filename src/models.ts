@@ -145,10 +145,16 @@ const DespatchAdviceSchema = new Schema({
     currentVersionId: { type: String },
     orderReference: { type: OrderReferenceSchema, required: true },
     despatchSupplierParty: { type: PartySchema, required: true },
-    deliveryCustomerParty: { type: PartySchema, required: true },
+    deliveryCustomerParty: { type: PartySchema, requiredß: true },
     shipmentDetails: { type: ShipmentSchema, required: true },
     despatchLines: { type: [DespatchLineSchema], required: true },
     HealthCheck: { type: HealthCheckSchema, required: true }
 }, { timestamps: true });
 
-//module.exports = mongoose.model('DespatchAdvice', DespatchAdviceSchema);
+// DDummy function to mark DespatchAdviceSchema as used without side effects
+function _useSchema(schema) {
+    return schema;
+}
+_useSchema(DespatchAdviceSchema);
+
+// module.exports = mongoose.model('DespatchAdvice', DespatchAdviceSchema);
