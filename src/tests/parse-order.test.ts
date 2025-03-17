@@ -3,7 +3,7 @@ import { url, port } from '../config.json';
 import { getBody, getStatusCode } from '../helpers';
 const SERVER_URL = `${url}:${port}`;
 
-function requestOrderParse(xmlString: string) {
+export function requestOrderParse(xmlString: string) {
     const response = request('POST', SERVER_URL + '/api/v1/order/parse', {
         headers: {
             'Content-Type': 'application/xml',

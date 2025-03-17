@@ -13,6 +13,10 @@ import process from 'process';
 
 import { User } from './user';
 import { parseOrderXml } from './parseOrder';
+import { generateDespatchAdvice } from './despatchAdvice';
+import { DespatchAdviceRequestBody } from './types/despatchTypes';
+import { despatchSchema } from '../db-schemas';
+import { validateDespatchAdviceUserInputs } from './helpers';
 
 dotenv.config();
 
@@ -33,8 +37,7 @@ app.use('/docs', sui.serve, sui.setup(YAML.parse(file), { swaggerOptions: { docE
 const PORT: number = parseInt(process.env.PORT || config.port);
 const HOST: string = process.env.IP || '127.0.0.1';
 
-const uri: string =
-    process.env.MONGODB_URI || '';
+const uri: string = process.env.MONGODB_URI || '';
 
 // DB connection
 mongoose
@@ -72,6 +75,60 @@ app.post('/api/v1/order/parse', express.text({ type: 'application/xml' }), (req:
 });
 
 app.use(express.json());
+
+const DespatchAdviceModel = mongoose.model('DespatchAdvice', despatchSchema);
+
+app.post('/api/v1/despatch-advice/generate', async (req: Request, res: Response) => {
+    try {
+        const body: DespatchAdviceRequestBody = req.body;
+
+        if (!body.parsedOrder) {
+            res.status(400).json({ error: 'parsedOrder is missing.' });
+        }
+
+        console.log(body.userInputs);
+
+        if (!validateDespatchAdviceUserInputs(body.userInputs)) {
+            return res.status(500).json({ error: 'Could not generate Despatch Advice' });
+        }
+
+        const xml = generateDespatchAdvice(body.parsedOrder, body.userInputs);
+
+        const docUUID = body.parsedOrder.orderUUID;
+        const despatchId = body.parsedOrder.orderId;
+
+        const existing = await DespatchAdviceModel.findOne({ docUUID });
+        if (existing) {
+            return res.status(409).json({
+                error: `A Despatch Advice with UUID '${docUUID}' already exists.`
+            });
+        }
+
+        const advice = new DespatchAdviceModel({ docUUID, despatchId, xml });
+        await advice.save();
+
+        return res.type('application/xml').status(200).send(xml);
+    } catch (error) {
+        console.error('Error generating Despatch Advice:', error);
+        res.status(500).json({ error: 'Could not generate Despatch Advice' });
+    }
+});
+
+app.get('/api/v1/despatch-advice/:uuid', async (req: Request, res: Response) => {
+    try {
+        const { uuid } = req.params;
+
+        const found = await DespatchAdviceModel.findOne({ docUUID: uuid });
+        if (!found) {
+            return res.status(404).json({ error: 'Despatch Advice not found' });
+        }
+
+        return res.type('application/xml').status(200).send(found.xml);
+    } catch (error) {
+        console.error('Error retrieving Despatch Advice:', error);
+        return res.status(500).json({ error: 'Failed to retrieve Despatch Advice' });
+    }
+});
 
 app.post('/add-mock-user', async (_req: Request, res: Response) => {
     try {

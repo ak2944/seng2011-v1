@@ -1,5 +1,8 @@
 image: node:18
 
+variables:
+  MONGODB_URI: "mongodb+srv://juanfranpuyo:kXXgF0VMbNyjOkDx@fiveapple.e5jpm.mongodb.net/?retryWrites=true&w=majority&appName=FiveApple"
+
 stages:
   - checks
   - tests
