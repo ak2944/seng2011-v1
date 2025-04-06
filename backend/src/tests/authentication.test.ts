@@ -1,41 +1,91 @@
+import mongoose from 'mongoose';
 import request from 'sync-request-curl';
-import { url, port } from '../config.json';
+import bcrypt from 'bcrypt';
+import { User } from '../user';
 import { getBody, getStatusCode } from '../helpers';
+import { url, port, MONGODB_URI} from '../config.json';
+
+
+jest.setTimeout(30000); // Up to 30s if needed
+
 const SERVER_URL = `${url}:${port}`;
 
-describe('POST /login', () => {
-    test('Valid username returns a JWT token', () => {
-        const result = request('POST', SERVER_URL + '/login', {
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ username: 'testuser' }),
-        });
-        expect(getStatusCode(result)).toStrictEqual(200);
-        const body = getBody(result);
-        expect(body).toHaveProperty('accessToken');
-    });
+const testEmail = 'testuser@example.com';
+const testPassword = 'password123';
 
-    test('Missing username returns error', () => {
-        const result = request('POST', SERVER_URL + '/login', {
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({}), // No username provided
-        });
-        expect(getStatusCode(result)).toStrictEqual(400);
-        expect(getBody(result)).toStrictEqual({ message: 'Username is required' });
-    });
+beforeAll(async () => {
+  // 1) Connect to DB
+  await mongoose.connect(MONGODB_URI);
+
+  // 2) Clean up any existing user
+  await User.deleteOne({ email: testEmail });
+
+  // 3) Create test user with hashed password
+  const hashedPassword = await bcrypt.hash(testPassword, 10);
+  await User.create({
+    name: 'Test user',
+    email: testEmail,
+    password: hashedPassword,
+  });
 });
 
-// describe('Mock User works', () => {
-//     test('Valid mock user', () => {
-//         const result = request('POST', SERVER_URL + '/add-mock-user');
+afterAll(async () => {
+  // Remove test user
+  await User.deleteOne({ email: testEmail });
+  
+  // Close DB connection
+  await mongoose.disconnect();
+});
 
-//         expect(getStatusCode(result)).toStrictEqual(201);
-//         expect(getBody(result)).toStrictEqual({
-//             message: expect.any(String),
-//             user: expect.any(Object),
-//         });
-//     });
-// });
+describe('POST /login', () => {
+  test('Valid email and password returns a JWT token', () => {
+    const result = request('POST', `${SERVER_URL}/login`, {
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: testEmail, password: testPassword }),
+    });
+
+    expect(getStatusCode(result)).toBe(200);
+
+    const body = getBody(result);
+    expect(body).toHaveProperty('accessToken');
+  });
+
+  test('Missing email and password returns error', () => {
+    const result = request('POST', `${SERVER_URL}/login`, {
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+
+    expect(getStatusCode(result)).toBe(400);
+    expect(getBody(result)).toStrictEqual({
+      message: 'Email and password are required',
+    });
+  });
+
+  test('Incorrect password returns error', () => {
+    const result = request('POST', `${SERVER_URL}/login`, {
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: testEmail, password: 'wrongpass' }),
+    });
+
+    expect(getStatusCode(result)).toBe(400);
+    expect(getBody(result)).toStrictEqual({
+      message: 'Invalid username or password',
+    });
+  });
+
+  test('Nonexistent user returns error', () => {
+    const result = request('POST', `${SERVER_URL}/login`, {
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: 'doesnotexist@example.com',
+        password: 'whatever',
+      }),
+    });
+
+    expect(getStatusCode(result)).toBe(400);
+    expect(getBody(result)).toStrictEqual({
+      message: 'Invalid username or password',
+    });
+  });
+});

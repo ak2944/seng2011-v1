@@ -1,5 +1,6 @@
 {
     "url": "http://127.0.0.1",
     "port": "3200",
-    "expandDocs": false
+    "expandDocs": false,
+    "MONGODB_URI": "mongodb+srv://juanfranpuyo:kXXgF0VMbNyjOkDx@fiveapple.e5jpm.mongodb.net/?retryWrites=true&w=majority&appName=FiveApple"
 }
