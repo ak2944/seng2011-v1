@@ -268,7 +268,7 @@ describe('Generate Advice', () => {
     test('Badly-formed parsed order code 500', () => {
         const parseResp = requestOrderParse(testXml);
         expect(getStatusCode(parseResp)).toBe(200);
-        const { parsedOrder } = getBody(parseResp) as { parsedOrder: any };
+        const { parsedOrder } = getBody(parseResp) as { parsedOrder: never };
         const badKeyUserInputs = {
             despatchId: '123456',
             deliveredQuantity: '5',

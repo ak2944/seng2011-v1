@@ -17,7 +17,7 @@ export function getTextBody(res: Response): string {
  * Checks if all keys in userInputs are valid (exist in DespatchAdviceUserInputs).
  * Throws a 500 error if any invalid key is found.
  */
-export function validateDespatchAdviceUserInputs(userInputs?: Record<string, any>): boolean {
+export function validateDespatchAdviceUserInputs(userInputs?: Record<string, never>): boolean {
     if (!userInputs) {
         return true;
     }

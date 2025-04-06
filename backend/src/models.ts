@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const Schema = mongoose.Schema;
 
@@ -152,6 +152,7 @@ const DespatchAdviceSchema = new Schema({
 }, { timestamps: true });
 
 // Dummy function to mark DespatchAdviceSchema as used without side effects
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function _useSchema(schema: any) {
     return schema;
 }
