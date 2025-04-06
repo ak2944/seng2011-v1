@@ -18,6 +18,7 @@ import { DespatchAdviceRequestBody } from './types/despatchTypes';
 import { despatchSchema } from '../db-schemas';
 import { validateDespatchAdviceUserInputs } from './helpers';
 import bcrypt from 'bcrypt'
+import { generateDespatchAdvicePDF } from './pdf';
 
 dotenv.config();
 
@@ -151,6 +152,26 @@ app.post('/api/v1/despatch-advice/generate', async (req: Request, res: Response)
     } catch (error) {
         console.error('Error generating Despatch Advice:', error);
         res.status(500).json({ error: 'Could not generate Despatch Advice' });
+    }
+});
+
+app.get('/api/v1/despatch-advice/:uuid/pdf', async (req: Request, res: Response) => {
+    try {
+        const { uuid } = req.params;
+        const found = await DespatchAdviceModel.findOne({ docUUID: uuid });
+
+        if (!found) {
+            return res.status(404).json({ error: 'Despatch Advice not found' });
+        }
+
+        const pdf = await generateDespatchAdvicePDF(found.xml);
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="despatch-advice-${uuid}.pdf"`);
+        res.status(200).send(pdf);
+    } catch (error) {
+        console.error('Error converting Despatch Advice to PDF:', error);
+        return res.status(500).json({ error: 'Failed to convert Despatch Advice to PDF' });
     }
 });
 
