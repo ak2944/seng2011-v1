@@ -17,6 +17,7 @@ import { generateDespatchAdvice } from './despatchAdvice';
 import { DespatchAdviceRequestBody } from './types/despatchTypes';
 import { despatchSchema } from '../db-schemas';
 import { validateDespatchAdviceUserInputs } from './helpers';
+import bcrypt from 'bcrypt'
 import { generateDespatchAdvicePDF } from './pdf';
 
 dotenv.config();
@@ -106,6 +107,7 @@ app.post('/api/v1/order/parse', express.text({ type: 'application/xml' }), (req:
         }
 
         const parsedOrder = parseOrderXml(orderXml);
+        console.log(parsedOrder);
         return res.status(200).json({ parsedOrder });
     } catch (error) {
         console.error('Error in parseOrderXml:', error);
@@ -153,23 +155,6 @@ app.post('/api/v1/despatch-advice/generate', async (req: Request, res: Response)
     }
 });
 
-app.get('/api/v1/despatch-advice/:uuid', async (req: Request, res: Response) => {
-    try {
-        const { uuid } = req.params;
-
-        const found = await DespatchAdviceModel.findOne({ docUUID: uuid });
-        if (!found) {
-            return res.status(404).json({ error: 'Despatch Advice not found' });
-        }
-
-        return res.type('application/xml').status(200).send(found.xml);
-    } catch (error) {
-        console.error('Error retrieving Despatch Advice:', error);
-        return res.status(500).json({ error: 'Failed to retrieve Despatch Advice' });
-    }
-});
-
-
 app.get('/api/v1/despatch-advice/:uuid/pdf', async (req: Request, res: Response) => {
     try {
         const { uuid } = req.params;
@@ -190,6 +175,21 @@ app.get('/api/v1/despatch-advice/:uuid/pdf', async (req: Request, res: Response)
     }
 });
 
+app.get('/api/v1/despatch-advice/:uuid', async (req: Request, res: Response) => {
+    try {
+        const { uuid } = req.params;
+
+        const found = await DespatchAdviceModel.findOne({ docUUID: uuid });
+        if (!found) {
+            return res.status(404).json({ error: 'Despatch Advice not found' });
+        }
+
+        return res.type('application/xml').status(200).send(found.xml);
+    } catch (error) {
+        console.error('Error retrieving Despatch Advice:', error);
+        return res.status(500).json({ error: 'Failed to retrieve Despatch Advice' });
+    }
+});
 
 app.post('/add-mock-user', async (_req: Request, res: Response) => {
     try {
@@ -208,26 +208,66 @@ app.post('/add-mock-user', async (_req: Request, res: Response) => {
 // Auth routes
 // Login endpoint: Simulate user login and generate a JWT token
 // Future iteration, validate user credentials before issuing a token
-app.post('/login', (req: Request, res: Response, next: NextFunction): void => {
-    const { username } = req.body;
+app.post('/login', async (req: Request, res: Response) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+          return res.status(400).json({ message: 'Email and password are required' });
+        }
+    
+        // Check user existence
+        const user = await User.findOne({ email });
+        if (!user) {
+          return res.status(400).json({ message: 'Invalid username or password' });
+        }
 
-    if (!username) {
-        res.status(400).json({ message: 'Username is required' });
-        return;
-    }
-
-    // Create the token payload
-    const payload: IUserPayload = { username };
-
-    // Sign the JWT token (expires in 1 hour)
-    const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '1h' });
-    res.json({ accessToken: token });
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+          return res.status(400).json({ message: 'Invalid username or password' });
+        }
+    
+        const token = jwt.sign({ email: user.email }, SECRET_KEY, { expiresIn: '1h' });
+        return res.json({ accessToken: token });
+      } catch (err) {
+        console.error('Login error:', err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
 });
 
+app.post('/logout', authenticateToken, async (req: Request, res: Response) => {
+    return res.json({ message: 'Logged out' });
+  });
+  
 // Protected endpoint: Only accessible with a valid JWT token
 app.get('/despatch-advice', authenticateToken, (req: Request, res: Response) => {
     res.json({ message: 'Protected Despatch Advice endpoint', user: req.user });
 });
+
+app.post('/register', async (req: Request, res: Response) => {
+    try {
+        
+        const {email, password, name} = req.body;
+        const existingUser = await User.findOne({email});
+        if (existingUser) {
+            return res.status(400).json({error: 'Email already in-use'})
+        }
+        
+        const hashedPassword = await bcrypt.hash(password, 10)
+        const newUser = new User({
+            email,
+            password,
+            name
+        });
+        await newUser.save()
+
+        const token = jwt.sign({email}, SECRET_KEY, {expiresIn: '1h'})
+        return res.status(200).json({ token });
+
+    } catch(err) {
+        console.error('Register error: ', err)
+        return res.status(500).json({error: 'Internal server error'})
+    }
+})
 
 // =============================================================================
 // =============================================================================
