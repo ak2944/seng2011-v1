@@ -1,22 +1,18 @@
 import request from 'sync-request-curl';
 import { url, port } from '../config.json';
 import { getBody, getStatusCode, getTextBody } from '../helpers';
-import { ParsedOrder } from '../types/orderTypes';
-import { DespatchAdviceUserInputs } from '../types/despatchTypes';
 import { requestOrderParse } from './parse-order.test';
 import { v4 as uuidv4 } from 'uuid';
 import mongoose from 'mongoose';
+import { requestGenerateDespatchAdvice } from './despatch-generate.test';
+
 const SERVER_URL = `${url}:${port}`;
 
-export function requestGenerateDespatchAdvice(
-    parsedOrder: ParsedOrder,
-    userInputs: DespatchAdviceUserInputs = {}
-) {
-    const response = request('POST', SERVER_URL + '/api/v1/despatch-advice/generate', {
+function requestRetrieveDespatchAdvice(uuid: string) {
+    const response = request('GET', SERVER_URL + `/api/v1/despatch-advice/${uuid}`, {
         headers: {
             'Content-Type': 'application/json',
         },
-        json: { parsedOrder, userInputs },
     });
     return response;
 }
@@ -216,73 +212,33 @@ const validUserInputs = {
     despatchLineNote: 'none'
 };
 
-const invalidUserInputs = {
-    despatchId: '',
-    deliveredQuantity: '5',
-    backorderQuantity: '20',
-    backorderReason: '',
-    shipmentStartDate: '',
-    shipmentEndDate: '2005-06-28',
-    lotNumberID: '10',
-    lotExpiryDate: '2006-10-10',
-    despatchLineNote: 'none'
-};
+const randomUUID = uuidv4();
+const testXml = validXml.replace('6E09886B-DC6E-439F-82D1-7CCAC7F4E3B1', randomUUID);
 
-let testXml: string;
-beforeEach(() => {
-    const randomUUID = uuidv4();
-    testXml = validXml.replace('6E09886B-DC6E-439F-82D1-7CCAC7F4E3B1', randomUUID);
+beforeAll(() => {
+    const parsedResponse = requestOrderParse(testXml);
+    expect(getStatusCode(parsedResponse)).toStrictEqual(200);
+    const { parsedOrder } = getBody(parsedResponse);
+    const generateResponse = requestGenerateDespatchAdvice(parsedOrder, validUserInputs);
+    expect(getStatusCode(generateResponse)).toBe(200);
+    const finalBody = getTextBody(generateResponse);
+    expect(finalBody).toEqual(expect.any(String));
 });
 
 afterAll(async () => {
     await mongoose.connection.close();
 });
 
-describe('Generate Advice', () => {
-    test('Valid case code 200', () => {
-        const parsedResponse = requestOrderParse(testXml);
-        expect(getStatusCode(parsedResponse)).toStrictEqual(200);
-        const { parsedOrder } = getBody(parsedResponse);
-        const generateResponse = requestGenerateDespatchAdvice(parsedOrder, validUserInputs);
-        expect(getStatusCode(generateResponse)).toBe(200);
-        const finalBody = getTextBody(generateResponse);
-        expect(finalBody).toEqual(expect.any(String));
+describe('Retrieve advice', () => {
+    test('Valid case: 200', () => {
+        const retrieveResponse = requestRetrieveDespatchAdvice(randomUUID);
+        expect(getStatusCode(retrieveResponse)).toStrictEqual(200);
+        // Check XML
     });
 
-    test('No XML => 400', () => {
-        const result = requestOrderParse('');
-        expect(getStatusCode(result)).toBe(400);
-        expect(getBody(result)).toStrictEqual({ error: expect.any(String) });
-    });
-
-    test('Missing User Inputs code 400', () => {
-        const parsedResponse = requestOrderParse(testXml);
-        expect(getStatusCode(parsedResponse)).toStrictEqual(200);
-        const { parsedOrder } = getBody(parsedResponse);
-        const generateResponse = requestGenerateDespatchAdvice(parsedOrder, invalidUserInputs);
-        expect(getStatusCode(generateResponse)).toStrictEqual(200);
-        const finalBody = getTextBody(generateResponse);
-        expect(finalBody).toStrictEqual(expect.any(String));
-    });
-
-    test('Badly-formed parsed order code 500', () => {
-        const parseResp = requestOrderParse(testXml);
-        expect(getStatusCode(parseResp)).toBe(200);
-        const { parsedOrder } = getBody(parseResp) as { parsedOrder: any };
-        const badKeyUserInputs = {
-            despatchId: '123456',
-            deliveredQuantity: '5',
-            backorderQuantity: '20',
-            backorderReason: 'Overstocked',
-            shipmentStartDate: '2005-06-21',
-            shipmentEndDate: '2005-06-28',
-            lotNumberID: '10',
-            lotExpiryDate: '2006-10-10',
-            despatchLineNote: 'none',
-            newKey: 'invalid'
-        };
-        const genResp = requestGenerateDespatchAdvice(parsedOrder, badKeyUserInputs);
-        expect(getStatusCode(genResp)).toBe(500);
-        expect(getBody(genResp)).toMatchObject({ error: expect.any(String) });
+    test('Invalid xml: 404', () => {
+        const retrieveResponse = requestRetrieveDespatchAdvice('HELLO');
+        expect(getStatusCode(retrieveResponse)).toStrictEqual(404);
+        // Check error
     });
 });

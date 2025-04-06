@@ -27,3 +27,15 @@ describe('POST /login', () => {
         expect(getBody(result)).toStrictEqual({ message: 'Username is required' });
     });
 });
+
+describe('Mock User works', () => {
+    test('Valid mock user', () => {
+        const result = request('POST', SERVER_URL + '/add-mock-user');
+
+        expect(getStatusCode(result)).toStrictEqual(201);
+        expect(getBody(result)).toStrictEqual({
+            message: expect.any(String),
+            user: expect.any(Object),
+        });
+    });
+});
