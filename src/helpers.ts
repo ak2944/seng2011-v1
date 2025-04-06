@@ -43,3 +43,8 @@ export function validateDespatchAdviceUserInputs(userInputs?: Record<string, any
 
     return true;
 }
+
+export function getErrorMessage(error: unknown) {
+    if (error instanceof Error) return error.message;
+    return String(error);
+}

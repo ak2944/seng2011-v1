@@ -15,8 +15,9 @@ import { User } from './user';
 import { parseOrderXml } from './parseOrder';
 import { generateDespatchAdvice } from './despatchAdvice';
 import { DespatchAdviceRequestBody } from './types/despatchTypes';
-import { despatchSchema } from '../db-schemas';
-import { validateDespatchAdviceUserInputs } from './helpers';
+import { DespatchAdviceModel } from '../db-schemas';
+import { getErrorMessage, validateDespatchAdviceUserInputs } from './helpers';
+import { cancelAdvice } from './advice';
 
 dotenv.config();
 
@@ -114,17 +115,26 @@ app.post('/api/v1/order/parse', express.text({ type: 'application/xml' }), (req:
 
 app.use(express.json());
 
-const DespatchAdviceModel = mongoose.model('DespatchAdvice', despatchSchema);
+// const DespatchAdviceModel = mongoose.model('DespatchAdvice', despatchSchema);
+
+app.delete('/api/despatchAdvice/cancel', async (req: Request, res: Response) => {
+    const { id, reason } = req.body;
+
+    try {
+        const result = await cancelAdvice(id, reason);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(400).json({ error: getErrorMessage(error) });
+    }
+});
 
 app.post('/api/v1/despatch-advice/generate', async (req: Request, res: Response) => {
     try {
         const body: DespatchAdviceRequestBody = req.body;
 
         if (!body.parsedOrder) {
-            res.status(400).json({ error: 'parsedOrder is missing.' });
+            return res.status(400).json({ error: 'parsedOrder is missing.' });
         }
-
-        console.log(body.userInputs);
 
         if (!validateDespatchAdviceUserInputs(body.userInputs)) {
             return res.status(500).json({ error: 'Could not generate Despatch Advice' });
