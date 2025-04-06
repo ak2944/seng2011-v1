@@ -8,7 +8,6 @@ stages:
   - tests
 
 before_script:
-  - cd backend
   - npm install
 
 lint:
