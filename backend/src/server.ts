@@ -37,7 +37,7 @@ app.get('/', (req: Request, res: Response) => res.redirect('/docs'));
 app.use('/docs', sui.serve, sui.setup(YAML.parse(file), { swaggerOptions: { docExpansion: config.expandDocs ? 'full' : 'list' } }));
 
 const PORT: number = parseInt(process.env.PORT || config.port);
-const HOST: string = process.env.IP || '127.0.0.1';
+const HOST: string = '0.0.0.0';
 
 const uri: string = process.env.MONGODB_URI || '';
 
