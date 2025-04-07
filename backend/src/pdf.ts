@@ -3,7 +3,7 @@ import { parseStringPromise } from 'xml2js';
 
 /**
  * Generates a human-readable PDF from Despatch Advice XML.
- * 
+ *
  * @param xml - The raw Despatch Advice XML string.
  * @returns A Promise that resolves to a Buffer containing the PDF.
  */
@@ -61,7 +61,7 @@ export async function generateDespatchAdvicePDF(xml: string): Promise<Buffer> {
 
     // 7) DespatchLine(s) – might be multiple lines
     const despatchLines = da['cac:DespatchLine'] || [];
-    const lineSummaries = despatchLines.map((lineObj: any, index: number) => {
+    const lineSummaries = despatchLines.map((lineObj: never, index: number) => {
         const lineId = lineObj['cbc:ID']?.[0] || `Line ${index + 1}`;
         const lineNote = lineObj['cbc:Note']?.[0] || '';
         const lineStatus = lineObj['cbc:LineStatusCode']?.[0] || 'N/A';
@@ -142,7 +142,7 @@ export async function generateDespatchAdvicePDF(xml: string): Promise<Buffer> {
     if (lineSummaries.length === 0) {
         doc.fontSize(12).text('No despatch lines found.');
     } else {
-        lineSummaries.forEach((ls: { lineId: any; lineStatus: any; deliveredQty: any; backorderQty: any; backorderReason: any; lineNote: any; itemName: any; itemDescription: any; }, idx: number) => {
+        lineSummaries.forEach((ls: { lineId: unknown; lineStatus: unknown; deliveredQty: unknown; backorderQty: unknown; backorderReason: unknown; lineNote: unknown; itemName: unknown; itemDescription: unknown; }, idx: number) => {
             doc.moveDown(0.5);
             doc.fontSize(12).text(`Line #${idx + 1} (ID: ${ls.lineId}):`);
             doc.text(`Status: ${ls.lineStatus}`);
