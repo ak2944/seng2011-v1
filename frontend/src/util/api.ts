@@ -6,8 +6,8 @@ export const ROUTES = {
     'set': '/store',
 }
 
-const BACKEND = 'https://s6pn3tgtpd.execute-api.us-east-1.amazonaws.com/api';
-;
+export const BACKEND = import.meta.env.VITE_BACKEND_URL;
+
 
 export async function post(url: string, data: object) {
     const response = await fetch(BACKEND + url, {
