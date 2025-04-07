@@ -17,7 +17,7 @@ import { generateDespatchAdvice } from './despatchAdvice';
 import { DespatchAdviceRequestBody } from './types/despatchTypes';
 import { despatchSchema } from '../db-schemas';
 import { validateDespatchAdviceUserInputs } from './helpers';
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcrypt';
 import { generateDespatchAdvicePDF } from './pdf';
 
 dotenv.config();
@@ -212,32 +212,29 @@ app.post('/login', async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body;
         if (!email || !password) {
-          return res.status(400).json({ message: 'Email and password are required' });
+            return res.status(400).json({ message: 'Email and password are required' });
         }
-    
         // Check user existence
         const user = await User.findOne({ email });
         if (!user) {
-          return res.status(400).json({ message: 'Invalid username or password' });
+            return res.status(400).json({ message: 'Invalid username or password' });
         }
-
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-          return res.status(400).json({ message: 'Invalid username or password' });
+            return res.status(400).json({ message: 'Invalid username or password' });
         }
-    
         const token = jwt.sign({ email: user.email }, SECRET_KEY, { expiresIn: '1h' });
         return res.json({ accessToken: token });
-      } catch (err) {
+    } catch (err) {
         console.error('Login error:', err);
         res.status(500).json({ error: 'Internal server error' });
-      }
+    }
 });
 
 app.post('/logout', authenticateToken, async (req: Request, res: Response) => {
     return res.json({ message: 'Logged out' });
-  });
-  
+});
+
 // Protected endpoint: Only accessible with a valid JWT token
 app.get('/despatch-advice', authenticateToken, (req: Request, res: Response) => {
     res.json({ message: 'Protected Despatch Advice endpoint', user: req.user });
@@ -245,29 +242,27 @@ app.get('/despatch-advice', authenticateToken, (req: Request, res: Response) => 
 
 app.post('/register', async (req: Request, res: Response) => {
     try {
-        
-        const {email, password, name} = req.body;
-        const existingUser = await User.findOne({email});
+        const { email, password, name } = req.body;
+        const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({error: 'Email already in-use'})
+            return res.status(400).json({ error: 'Email already in-use' });
         }
-        
-        const hashedPassword = await bcrypt.hash(password, 10)
+
+        const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = new User({
             email,
-            password,
+            password: hashedPassword,
             name
         });
-        await newUser.save()
+        await newUser.save();
 
-        const token = jwt.sign({email}, SECRET_KEY, {expiresIn: '1h'})
+        const token = jwt.sign({ email }, SECRET_KEY, { expiresIn: '1h' });
         return res.status(200).json({ token });
-
-    } catch(err) {
-        console.error('Register error: ', err)
-        return res.status(500).json({error: 'Internal server error'})
+    } catch (err) {
+        console.error('Register error: ', err);
+        return res.status(500).json({ error: 'Internal server error' });
     }
-})
+});
 
 // =============================================================================
 // =============================================================================

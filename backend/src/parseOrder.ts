@@ -7,8 +7,7 @@ import { UBLRawOrderLine, UBLRawOrderRoot, UBLRawPostalAddress } from './types/U
  * Throws an error if invalid or missing fields.
  */
 export function parseOrderXml(orderXml: string): ParsedOrder {
-    const parser = new XMLParser({ ignoreAttributes: false, ignoreDeclaration: false,
-    });
+    const parser = new XMLParser({ ignoreAttributes: false, ignoreDeclaration: false });
     const obj = parser.parse(orderXml) as UBLRawOrderRoot;
 
     if (!obj.Order) {

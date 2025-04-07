@@ -145,6 +145,7 @@ export function generateDespatchAdvice(
 /**
  * Helper to build <cac:Party> sub-tree for a Supplier or Customer.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function buildParty(parentNode: any, partyName: string, address?: any) {
     const party = parentNode.ele('cac:Party');
     party.ele('cac:PartyName').ele('cbc:Name').txt(partyName).up().up();
@@ -171,6 +172,7 @@ function buildParty(parentNode: any, partyName: string, address?: any) {
 /**
  * Helper to build <cac:DeliveryAddress> inside <cac:Delivery>
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function buildDeliveryAddress(deliveryNode: any, address: any) {
     const addr = deliveryNode.ele('cac:DeliveryAddress');
     addr.ele('cbc:StreetName').txt(address?.streetName || '').up();
