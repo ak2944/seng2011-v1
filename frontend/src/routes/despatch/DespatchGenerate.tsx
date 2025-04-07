@@ -1,6 +1,6 @@
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
-import { post } from "../..//util/api"
+import { BACKEND, post } from "../..//util/api"
 import { useRef, useState } from "react"
 import React from "react"
 import { EmailShareButton, EmailIcon } from 'react-share'
@@ -74,7 +74,7 @@ export default function DespatchAdviceGenerator() {
         try {
 
         const fileText = await xmlFile.text();
-        const response = await fetch("http://localhost:3200/api/v1/order/parse", {
+        const response = await fetch(`${BACKEND}/order/parse`, {
             method: "POST",
             headers: { "Content-Type": "application/xml" },
             body: fileText,
@@ -115,7 +115,7 @@ export default function DespatchAdviceGenerator() {
 
         const xmlText = await response.text()
 
-        const parseRes = await fetch("http://localhost:3200/api/v1/order/parse", {
+        const parseRes = await fetch(`${BACKEND}/api/v1/order/parse`, {
             method: "POST",
             headers: { "Content-Type": "application/xml" },
             body: xmlText
@@ -148,7 +148,7 @@ export default function DespatchAdviceGenerator() {
             parsedOrder,
             userInputs: overrides
         }
-        const res = await fetch("http://localhost:3200/api/v1/despatch-advice/generate", {
+        const res = await fetch(`${BACKEND}/api/v1/despatch-advice/generate`, {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body)
@@ -185,7 +185,7 @@ export default function DespatchAdviceGenerator() {
         try {
 
             const uuid = parsedOrder?.orderUUID
-            const pdfRes = await fetch(`http://localhost:3200/api/v1/despatch-advice/${uuid}/pdf`)
+            const pdfRes = await fetch(`${BACKEND}/api/v1/despatch-advice/${uuid}/pdf`)
 
             if (!pdfRes.ok) {
                 throw new Error("Could not fetch PDF")
