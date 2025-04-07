@@ -8,6 +8,7 @@ export const ROUTES = {
 
 export const BACKEND = import.meta.env.VITE_BACKEND_URL;
 
+  console.log("Backend URL:", BACKEND);
 
 export async function post(url: string, data: object) {
     const response = await fetch(BACKEND + url, {
