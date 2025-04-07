@@ -2,6 +2,8 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
+console.log("🧪 Vite is building with env:", process.env.VITE_BACKEND_URL);
+
 export default defineConfig({
   plugins: [react()],
   test: {
