@@ -61,7 +61,7 @@ export async function generateDespatchAdvicePDF(xml: string): Promise<Buffer> {
 
     // 7) DespatchLine(s) – might be multiple lines
     const despatchLines = da['cac:DespatchLine'] || [];
-    const lineSummaries = despatchLines.map((lineObj: unknown, index: number) => {
+    const lineSummaries = despatchLines.map((lineObj: never, index: number) => {
         const lineId = lineObj['cbc:ID']?.[0] || `Line ${index + 1}`;
         const lineNote = lineObj['cbc:Note']?.[0] || '';
         const lineStatus = lineObj['cbc:LineStatusCode']?.[0] || 'N/A';
