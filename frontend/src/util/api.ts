@@ -6,7 +6,8 @@ export const ROUTES = {
     'set': '/store',
 }
 
-const BACKEND = 'http://localhost:3200';
+const BACKEND = 'https://s6pn3tgtpd.execute-api.us-east-1.amazonaws.com/sprint3';
+;
 
 export async function post(url: string, data: object) {
     const response = await fetch(BACKEND + url, {
